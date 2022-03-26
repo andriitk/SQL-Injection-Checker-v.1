@@ -64,7 +64,7 @@ def main():
 
     return print(
         f"\n\033[33m\033[1m[INFO]\033[0m \033[33m\033[1m{counter}\033[0m "
-        f"SQL-INJECTIONS URLS WRITTEN TO \033[31m\033[4minj_sites.txt\033[0m")
+        f"SQL-INJECTIONS URLS WRITTEN TO \033[31m\033[4minj_sites.txt\033[0m\n")
 
 
 if __name__ == "__main__":
