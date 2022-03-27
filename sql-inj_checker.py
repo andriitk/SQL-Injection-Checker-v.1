@@ -1,6 +1,7 @@
 from concurrent.futures import ProcessPoolExecutor
 from pyfiglet import Figlet
 import requests
+import datetime
 
 headers = {
     "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,"
@@ -9,10 +10,11 @@ headers = {
                   "Chrome/93.0.4577.63 Safari/537.36"
 }
 
-symbol = "'"
+symbol = "-1'"
 
 list_words = ['Error',
               'error',
+              'ERROR',
               'failed']
 try:
     with open('sites.txt', 'r', encoding='utf-8') as f:
@@ -39,36 +41,42 @@ def start_check(site: str):
         stroka = stroka.strip()
         url = f"{site}{stroka}{symbol}"
         res = requests.get(url=url, headers=headers).text
+
         count = 0
         for i in list_words:
             if i in res:
                 count += 1
+                cur_time = datetime.datetime.now().strftime("%H:%M:%S")
                 print(
-                    f"\033[32m\033[1m[GOOD]\033[0m \033[33m\033[1mSQL-INJECTION IS POSSIBLE\033[0m \033[1m{url}\033[0m")
+                    f"\033[32m\033[1m[{cur_time} - GOOD]\033[0m \033[33m\033[1mSQL-INJECTION IS POSSIBLE\033[0m "
+                    f"\033[1m{url}\033[0m")
                 with open('inj_sites.txt', 'a+', encoding='utf-8') as file:
                     file.write(url + '\n')
             else:
-                print(f"\033[31m\033[1m[BAD]\033[0m \033[1m{url}\033[0m \033[33m\033[1mNOT INJECTION\033[0m")
+                cur_time = datetime.datetime.now().strftime("%H:%M:%S")
+                print(
+                    f"\033[31m\033[1m[{cur_time} - BAD]\033[0m \033[1m{url}\033[0m \033[33m\033[1mNOT INJECTION\033[0m")
 
 
 def main():
-    with ProcessPoolExecutor(max_workers=10) as ex:
+    with ProcessPoolExecutor(max_workers=len(SITES)) as ex:
         ex.map(start_check, SITES)
 
     try:
         with open('inj_sites.txt', 'r') as f:
             urls = f.readlines()
         counter = len(urls)
+
     except FileNotFoundError:
         counter = 0
 
     return print(
-        f"\n\033[33m\033[1m[INFO]\033[0m \033[33m\033[1m{counter}\033[0m "
+        f"\n\033[33m\033[1m[INFO]\033[0m \033[34m\033[1m{counter}\033[0m "
         f"SQL-INJECTIONS URLS WRITTEN TO \033[31m\033[4minj_sites.txt\033[0m\n")
 
 
 if __name__ == "__main__":
     preview_text = Figlet(font='doom', width=200)
-    text = preview_text.renderText('SQL-Injections Checker')
+    text = preview_text.renderText('SQL - Injections  Checker')
     print(f'\033[35m\033[1m{text}\033[0m')
     main()
