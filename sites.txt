@@ -1,1 +1,3 @@
 https://metanit.com/web/nodejs/
+https://metanit.com/web/python/
+https://metanit.com/web/js/
