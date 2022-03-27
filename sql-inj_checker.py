@@ -49,13 +49,14 @@ def start_check(site: str):
                 cur_time = datetime.datetime.now().strftime("%H:%M:%S")
                 print(
                     f"\033[32m\033[1m[{cur_time} - GOOD]\033[0m \033[33m\033[1mSQL-INJECTION IS POSSIBLE\033[0m "
-                    f"\033[1m{url}\033[0m")
+                    f"\033[34m\033[4m{url}\033[0m")
                 with open('inj_sites.txt', 'a+', encoding='utf-8') as file:
                     file.write(url + '\n')
             else:
                 cur_time = datetime.datetime.now().strftime("%H:%M:%S")
                 print(
-                    f"\033[31m\033[1m[{cur_time} - BAD]\033[0m \033[1m{url}\033[0m \033[33m\033[1mNOT INJECTION\033[0m")
+                    f"\033[31m\033[1m[{cur_time} - BAD]\033[0m \033[34m\033[4m{url}\033[0m "
+                    f"\033[33m\033[1mNOT INJECTION\033[0m")
 
 
 def main():
@@ -79,4 +80,8 @@ if __name__ == "__main__":
     preview_text = Figlet(font='doom', width=200)
     text = preview_text.renderText('SQL - Injections  Checker')
     print(f'\033[35m\033[1m{text}\033[0m')
-    main()
+
+    try:
+        main()
+    except KeyboardInterrupt:
+        print("\n\033[33m\033[1m[INFO]\033[0m PROGRAM STOPPED BY USER\n")
