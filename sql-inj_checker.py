@@ -1,57 +1,65 @@
 from concurrent.futures import ProcessPoolExecutor
 from pyfiglet import Figlet
+from requests import Response
 import requests
 import datetime
+import urllib.parse
 
-headers = {
+HEADERS = {
     "accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/avif,image/webp,image/apng,*/*;q=0.8,"
               "application/signed-exchange;v=b3;q=0.9",
     "user-agent": "Mozilla/5.0 (X11; Linux x86_64) AppleWebKit/537.36 (KHTML, like Gecko) "
                   "Chrome/93.0.4577.63 Safari/537.36"
 }
 
-symbol = "-1'"
+SYMBOL = ["1'", '1"', '1`']
 
-list_words = ['Error',
-              'error',
-              'ERROR',
-              'failed']
-try:
-    with open('sites.txt', 'r', encoding='utf-8') as f:
-        sites = f.read()
-    SITES = sites.split('\n')
+LIST_WORDS = ['SQL',
+              'Sql',
+              'DBError']
 
-except FileNotFoundError:
-    print('File sites.txt not found')
+
+def get_file_lines(filename: str) -> list[str]:
+    try:
+        with open(filename, encoding="utf-8") as f:
+            sites = f.read().split("\n")
+            sites = set(sites)
+            sites = list(sites)
+            return sites
+    except FileNotFoundError:
+        raise SystemExit(f"\n\033[31m\033[1m[ERROR]\033[0m Please check if file "
+                         f"\033[31m\033[4m{filename}\033[0m exists\n")
+
+
+def error_in_body(response: Response) -> bool:
+    for word in LIST_WORDS:
+        if word in response.text:
+            return True
+    return False
+
+
+SITES = get_file_lines('sites.txt')
 
 
 def start_check(site: str):
-    try:
-        with open('checkers_list.txt', 'r', encoding='utf-8') as f:
-            strings = f.read()
+    checkers_list = get_file_lines('checkers_list.txt')
 
-    except FileNotFoundError:
-        return 'File checkers_list.txt not found'
+    for dork in checkers_list:
+        dork = dork.strip()
+        for symbol in SYMBOL:
+            symbol = urllib.parse.quote_plus(symbol)
+            url = f"{site}{dork}{symbol}"
+            res = requests.get(url=url, headers=HEADERS)
 
-    list_string = strings.split('\n')
-    list_string = set(list_string)
-    checkers_list = list(list_string)
-
-    for stroka in checkers_list:
-        stroka = stroka.strip()
-        url = f"{site}{stroka}{symbol}"
-        res = requests.get(url=url, headers=headers).text
-
-        count = 0
-        for i in list_words:
-            if i in res:
-                count += 1
-                cur_time = datetime.datetime.now().strftime("%H:%M:%S")
-                print(
-                    f"\033[32m\033[1m[{cur_time} - GOOD]\033[0m \033[33m\033[1mSQL-INJECTION IS POSSIBLE\033[0m "
-                    f"\033[34m\033[4m{url}\033[0m")
-                with open('inj_sites.txt', 'a+', encoding='utf-8') as file:
-                    file.write(url + '\n')
+            if error_in_body(res):
+                if 100 < res.status_code < 400:
+                    cur_time = datetime.datetime.now().strftime("%H:%M:%S")
+                    print(
+                        f"\033[32m\033[1m[{cur_time} - GOOD]\033[0m \033[33m\033[1mSQL-INJECTION IS POSSIBLE\033[0m "
+                        f"\033[34m\033[4m{url}\033[0m")
+                    with open('inj_sites.txt', 'a+', encoding='utf-8') as file:
+                        file.write(f'[SITE] {site}\n'
+                                   f'[URL] {url}\n\n')
             else:
                 cur_time = datetime.datetime.now().strftime("%H:%M:%S")
                 print(
