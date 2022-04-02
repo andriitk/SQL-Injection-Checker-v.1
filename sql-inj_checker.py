@@ -19,7 +19,7 @@ LIST_WORDS = ['SQL',
               'DBError']
 
 
-def get_file_lines(filename: str) -> list[str]:
+def get_file_lines(filename: str):
     try:
         with open(filename, encoding="utf-8") as f:
             sites = f.read().split("\n")
@@ -31,7 +31,7 @@ def get_file_lines(filename: str) -> list[str]:
                          f"\033[31m\033[4m{filename}\033[0m exists\n")
 
 
-def error_in_body(response: Response) -> bool:
+def error_in_body(response: Response):
     for word in LIST_WORDS:
         if word in response.text:
             return True
