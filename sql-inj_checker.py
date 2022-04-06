@@ -16,7 +16,10 @@ SYMBOL = ["1'", '1"', '1`']
 
 LIST_WORDS = ['SQL',
               'Sql',
-              'DBError']
+              'DBError',
+              'Error',
+              'error',
+              'ERROR']
 
 
 def get_file_lines(filename: str):
@@ -48,7 +51,10 @@ def start_check(site: str):
         dork = dork.strip()
         for symbol in SYMBOL:
             symbol = urllib.parse.quote_plus(symbol)
-            url = f"{site}{dork}{symbol}"
+            if site[-1] == '/':
+                url = f"{site}{dork}{symbol}"
+            else:
+                url = f"{site}/{dork}{symbol}"
             res = requests.get(url=url, headers=HEADERS)
 
             if error_in_body(res):
@@ -68,7 +74,7 @@ def start_check(site: str):
 
 
 def main():
-    with ProcessPoolExecutor(max_workers=len(SITES)) as ex:
+    with ProcessPoolExecutor(max_workers=3) as ex:
         ex.map(start_check, SITES)
 
     try:
