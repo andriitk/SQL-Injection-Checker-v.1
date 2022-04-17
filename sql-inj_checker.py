@@ -16,10 +16,7 @@ SYMBOL = ["1'", '1"', '1`']
 
 LIST_WORDS = ['SQL',
               'Sql',
-              'DBError',
-              'Error',
-              'error',
-              'ERROR']
+              'DBError']
 
 
 def get_file_lines(filename: str):
@@ -30,8 +27,9 @@ def get_file_lines(filename: str):
             sites = list(sites)
             return sites
     except FileNotFoundError:
-        raise SystemExit(f"\n\033[31m\033[1m[ERROR]\033[0m Please check if file "
-                         f"\033[31m\033[4m{filename}\033[0m exists\n")
+        print(f"\n\033[31m\033[1m[ERROR]\033[0m Please check if file "
+              f"\033[31m\033[4m{filename}\033[0m exists\n")
+        exit()
 
 
 def error_in_body(response: Response):
@@ -39,9 +37,6 @@ def error_in_body(response: Response):
         if word in response.text:
             return True
     return False
-
-
-SITES = get_file_lines('sites.txt')
 
 
 def start_check(site: str):
@@ -54,7 +49,7 @@ def start_check(site: str):
             if site[-1] == '/':
                 url = f"{site}{dork}{symbol}"
             else:
-                url = f"{site}/{dork}{symbol}"
+                url = f'{site}/{dork}{symbol}'
             res = requests.get(url=url, headers=HEADERS)
 
             if error_in_body(res):
@@ -74,20 +69,27 @@ def start_check(site: str):
 
 
 def main():
-    with ProcessPoolExecutor(max_workers=3) as ex:
-        ex.map(start_check, SITES)
+    sites = get_file_lines('sites.txt')
+    if len(sites) <= 20:
+        with ProcessPoolExecutor(max_workers=len(sites)) as ex:
+            ex.map(start_check, sites)
 
-    try:
-        with open('inj_sites.txt', 'r') as f:
-            urls = f.readlines()
-        counter = len(urls)
+        try:
+            with open('inj_sites.txt', 'r') as f:
+                urls = f.readlines()
+            counter = len(urls) / 2
 
-    except FileNotFoundError:
-        counter = 0
+        except FileNotFoundError:
+            counter = 0
 
-    return print(
-        f"\n\033[33m\033[1m[INFO]\033[0m \033[34m\033[1m{counter}\033[0m "
-        f"SQL-INJECTIONS URLS WRITTEN TO \033[31m\033[4minj_sites.txt\033[0m\n")
+        print(
+            f"\n\033[33m\033[1m[INFO]\033[0m \033[34m\033[1m{counter}\033[0m "
+            f"SQL-INJECTIONS URLS WRITTEN TO \033[31m\033[4minj_sites.txt\033[0m\n")
+
+    if len(sites) > 20:
+        print(
+            f"\n\033[31m\033[1m[ERROR]\033[0m  File \033[31m\033[4msites.txt\033[0m must have 20 sites NOT MORE!")
+        exit()
 
 
 if __name__ == "__main__":
